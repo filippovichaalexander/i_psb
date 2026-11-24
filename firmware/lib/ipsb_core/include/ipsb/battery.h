@@ -10,23 +10,24 @@ namespace ipsb {
 uint8_t voltageToPercent(uint16_t millivolts);
 
 // Undo a resistor divider. Default is the 100K/100K divider used on the board.
-uint16_t adcMillivoltsToBatteryMillivolts(uint16_t adcMillivolts,
-                                         uint16_t rTopK = 100,
-                                         uint16_t rBottomK = 100);
+uint16_t adcMillivoltsToBatteryMillivolts(uint16_t adcMillivolts, uint16_t rTopK = 100,
+                                          uint16_t rBottomK = 100);
 
 // Exponential moving average with a cold-start snap.
 class EmaFilter {
- public:
-  explicit EmaFilter(float alpha = 0.2f) : alpha_(alpha) {}
+  public:
+    explicit EmaFilter(float alpha = 0.2f) : alpha_(alpha) {}
 
-  float update(float sample);
-  float value() const { return value_; }
-  void reset(float value = 0.0f);
+    float update(float sample);
+    float value() const {
+        return value_;
+    }
+    void reset(float value = 0.0f);
 
- private:
-  float alpha_;
-  float value_ = 0.0f;
-  bool initialized_ = false;
+  private:
+    float alpha_;
+    float value_ = 0.0f;
+    bool initialized_ = false;
 };
 
 }  // namespace ipsb
