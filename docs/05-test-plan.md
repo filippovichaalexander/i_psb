@@ -110,7 +110,13 @@ docker compose run --rm native-tests
 
 | Дата | Версия | Уровень | Результат | Комментарий |
 |---|---|---|---|---|
-| 2026-11-24 | M0 | Build (CI) | см. Actions | первая сборка |
-| 2026-11-24 | M0 | Unit (native) | см. Actions | 30+ кейсов |
+| 2026-11-24 | M0 | Unit (native) | **PASS 29/29** | 0.7 s, Docker |
+| 2026-11-24 | M0 | Build esp32s3 | **PASS** | flash 1 566 880 B (37.4 %), RAM 46 480 B (14.2 %) |
+| 2026-11-24 | M0 | LittleFS | **PASS** | `make fs`, образ 6 291 456 B |
+| 2026-11-24 | M0 | Web syntax | **PASS** | `node --check`, manifest JSON |
+| 2026-11-24 | M0 | Web mock API | **PASS** | status, files, upload, delete (curl) |
+| 2026-11-24 | M0 | clang-format | **PASS** | 46 files |
+| 2026-11-24 | M0 | HIL | **BLOCKED** | нет подтверждённой платы; см. 07-bringup |
+| — | M0 | CI (GitHub Actions) | ожидает push | см. Actions после develop |
 
 > Обновляйте таблицу после каждого прогона. FAIL без причины — не результат.

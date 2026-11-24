@@ -26,11 +26,30 @@ E-Ink Hi-Fi плеер. Задача: проанализировать, созд
 | # | Симптом | Причина | Решение |
 |---|---|---|---|
 | 1 | `BAT_ADC=GPIO42` не измеряет | У S3 ADC только GPIO1–20 | Перенос на GPIO10 (ADC1_CH9) |
-| 2 | `u8g2_font_helvB*_t_cyrillic` не компилируется | Helvetica в U8g2 без кириллицы | Unifont/Courier Cyrillic |
+| 2 | `u8g2_font_helvB*_t_cyrillic` не компилируется | Helvetica в U8g2 без кириллицы | Unifont/10x20 Cyrillic |
 | 3 | `gh repo create --push` упал | обёртка `gh` не нашла `git-remote-https` | Прямой `git push` сработал |
 | 4 | Docker Hub `platformio/platformio-core` недоступен | образ не существует/переименован | `python:3.12-slim` + `pip install platformio==6.2.0` |
 | 5 | 24/96 FLAC в ТЗ | audioI2S документирует 16–48 кГц | v0 — 48 кГц; hi-res тракт — отдельное решение |
 | 6 | TTP229 «залипает» при удержании | autocal + 32 мс | Декодер по переходам; MPR121 как план B |
+| 7 | `kVolumeStartupStep` не найден | `types.h` не включал `ipsb/volume.h` | Добавлен include |
+| 8 | `U8G2_FOR_ADAFRUIT_GFX` без `setFontPosTop` | В 1.8.0 позиционирование по baseline, нет `u8g2_uint_t` | `y + getFontAscent()`, `int16_t` |
+| 9 | `Network.h` / `FS.h` not found | `lib_ldf_mode = deep+` ломает резолв встроенных библиотек ядра | Убран deep+, default LDF |
+| 10 | Лишняя зависимость U8g2 | FAF сам содержит `u8g2_fonts.c` (1689 шрифтов) | U8g2 удалён из `lib_deps` |
+| 11 | Риск голодания I2S | audioI2S создаёт свою DMA-задачу priority 2 | feeder priority 1, не выше DMA |
+
+### Верификация M0 (2026-11-24)
+
+| Проверка | Команда | Результат |
+|---|---|---|
+| Native unit | `docker compose run --rm native-tests` | **29/29 PASS**, 0.7 s |
+| ESP32 build | `docker compose run --rm firmware pio run` | **SUCCESS**, 45 s first / 7 s incremental |
+| RAM | size report | 46 480 B / 327 680 B (**14.2 %**) |
+| Flash | size report | 1 566 880 B / 4 194 304 B (**37.4 %**) |
+| LittleFS | `make fs` | SUCCESS, образ 6 291 456 B (раздел 6 МБ) |
+| Web JS | `node --check web/app.js` | PASS |
+| Mock API | status/files/upload/delete | PASS (curl) |
+| Format | `./tools/lint.sh` | PASS |
+| HIL | — | **BLOCKED**: нет подтверждённой платы/железа |
 
 ### Решения
 

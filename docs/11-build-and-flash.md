@@ -26,7 +26,7 @@ make clean        # удалить .pio/build
 docker compose run --rm firmware pio run
 docker compose run --rm native-tests pio test -e native
 docker compose run --rm firmware pio run -t size
-docker compose run --rm firmware pio run -t upload   # нужен --device
+./tools/flash.sh /dev/ttyACM0          # docker run + USB passthrough
 ```
 
 ## 3. Docker-окружение
@@ -36,8 +36,9 @@ docker compose run --rm firmware pio run -t upload   # нужен --device
 ```dockerfile
 FROM python:3.12-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl ca-certificates && rm -rf /var/lib/apt/lists/*
+    git curl ca-certificates build-essential && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir platformio==6.2.0
+ENV PLATFORMIO_CORE_DIR=/workspace/.pio-core
 WORKDIR /workspace
 ```
 
@@ -75,30 +76,28 @@ WORKDIR /workspace
 # найти порт
 ls /dev/ttyACM* /dev/ttyUSB*
 
-# прошить (пример)
-docker compose run --rm \
-  --device=/dev/ttyACM0 \
-  --group-add dialout \
-  firmware pio run -t upload --upload-port /dev/ttyACM0
+# прошить (рекомендуется)
+./tools/flash.sh /dev/ttyACM0
 ```
 
-Если `--device` не работает в вашей версии Compose — используйте `docker run`:
+`docker compose run` не поддерживает `--device`/`--group-add`; поэтому скрипт
+использует `docker run` напрямую:
 
 ```bash
 docker run --rm -it \
   --device=/dev/ttyACM0 --group-add dialout \
   -v "$PWD":/workspace -w /workspace/firmware \
   -e PLATFORMIO_CORE_DIR=/workspace/.pio-core \
-  ipsb-pio pio run -t upload --upload-port /dev/ttyACM0
+  ipsb-pio:local pio run -t upload --upload-port /dev/ttyACM0
 ```
 
 ### Через esptool (аварийно)
 
 ```bash
 esptool.py --chip esp32s3 --port /dev/ttyACM0 --baud 921600 \
-  write_flash 0x0 build/bootloader.bin \
-  0x8000 build/partitions.bin \
-  0x10000 build/firmware.bin
+  write_flash 0x0 firmware/.pio/build/esp32s3/bootloader.bin \
+  0x8000 firmware/.pio/build/esp32s3/partitions.bin \
+  0x10000 firmware/.pio/build/esp32s3/firmware.bin
 ```
 
 Точные offset'ы смотрите в `firmware/partitions_16MB.csv`.
@@ -107,27 +106,40 @@ esptool.py --chip esp32s3 --port /dev/ttyACM0 --baud 921600 \
 
 ```bash
 make fs
-docker compose run --rm --device=/dev/ttyACM0 --group-add dialout \
-  firmware pio run -t uploadfs --upload-port /dev/ttyACM0
+./tools/uploadfs.sh /dev/ttyACM0
 ```
 
 ## 7. Serial monitor
 
 ```bash
-docker compose run --rm --device=/dev/ttyACM0 --group-add dialout \
-  firmware pio device monitor -b 115200
+./tools/monitor.sh /dev/ttyACM0
 ```
 
 Ожидаемый вывод:
 
 ```text
-[i] i_psb 0.1.0 boot
-[i] reset_reason=...
-[i] flash=16777216 psram=8388608 heap=...
-[i] SD: mounted, size=...
-[i] EPD: init OK
-[i] audio: I2S ready, volume=4/21
+[0][i][boot] i_psb 0.1.0
+[1][i][boot] reset=power-on chip_rev=... flash=16777216 psram=8388608 heap=...
+[..][i][sd] mounted: total=... used=...
+[..][i][epd] panel 250x122 rotation=1
+[..][i][audio] I2S ready: BCLK=18 LRCK=16 DIN=17 MCLK=-1 volume=4/21
+[..][i][input] buttons + TTP229 ready (SCL=4 SDO=5)
+[..][i][wifi] not implemented in M0 (planned M3)
+[..][i][ble] not implemented in M0 (planned M4)
+[..][i][app] ready: tracks=... sd=... audio=...
+[..][i][main] tasks started
 ```
+
+Фактическая сборка M0 (2026-11-24):
+
+| Метрика | Значение |
+|---|---|
+| Flash | 1 566 880 B / 4 194 304 B (37.4 %) |
+| RAM | 46 480 B / 327 680 B (14.2 %) |
+| LittleFS image | 6 291 456 B (раздел 6 МБ) |
+| Native tests | 29/29 PASS |
+| Первая сборка | ~9 мин (скачивание toolchain) |
+| Инкрементальная | ~7 с |
 
 ## 8. OTA (план M2/M3)
 

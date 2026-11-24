@@ -1,8 +1,14 @@
 # i_psb — ultra-compact retro Hi-Fi player on ESP32-S3
 
-**Status: M0 — blueprint + buildable skeleton.** The firmware boots, drives the E-Paper display,
-reads the wheel/buttons, monitors the battery and mounts the SD card. Audio playback uses
-`ESP32-audioI2S` (16–48 kHz); the hi-res FLAC path is an open design decision (see the audit).
+[![ci](https://github.com/filippovichaalexander/i_psb/actions/workflows/ci.yml/badge.svg)](https://github.com/filippovichaalexander/i_psb/actions/workflows/ci.yml)
+
+**Status: M0 — blueprint + buildable skeleton.** Verified on 2026-11-24:
+firmware builds (flash 37.4 %, RAM 14.2 %), **29/29 native tests pass**, the web SPA
+talks to the mock API, and the LittleFS image builds. It boots, drives the E-Paper
+display, reads the wheel/buttons, monitors the battery and mounts the SD card.
+Audio playback uses `ESP32-audioI2S` (16–48 kHz); the hi-res FLAC path is an open
+design decision (see the audit). Hardware-in-the-loop is **blocked** until the exact
+ESP32 board is confirmed (see [B2/B11](docs/03-critique.md)).
 
 [English abstract](#english) · [Документация](#документация) · [Быстрый старт](#быстрый-старт-docker)
 
@@ -30,7 +36,7 @@ reads the wheel/buttons, monitors the battery and mounts the SD card. Audio play
 |---|---|---|
 | `BAT_ADC = GPIO42` | `BAT_ADC = GPIO10` | На ESP32-S3 ADC есть только на GPIO1–20; GPIO42 — обычный GPIO. |
 | `EPD_CS = GPIO10` | `EPD_CS = GPIO21` | Освободили ADC1_CH9 (GPIO10) под делитель батареи. |
-| `u8g2_font_helvB*_t_cyrillic` | `u8g2_font_unifont_t_cyrillic` / `cu12_t_cyrillic` | Helvetica-шрифтов с кириллицей в U8g2 нет — код бы не собрался. |
+| `u8g2_font_helvB*_t_cyrillic` | `u8g2_font_unifont_t_cyrillic` / `10x20_t_cyrillic` | Helvetica-шрифтов с кириллицей в U8g2 нет — код бы не собрался. |
 
 Ещё два пункта требуют решения до закупки/пайки: **USB data path** (TP4056 Type-C — только зарядка)
 и **24/96 FLAC** (ESP32-audioI2S официально ограничен 16–48 кГц). Подробности — в аудите.
