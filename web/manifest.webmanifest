@@ -1,0 +1,17 @@
+{
+  "name": "i_psb sync",
+  "short_name": "i_psb",
+  "description": "Upload music and manage an i_psb ESP32-S3 player",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f4f2",
+  "theme_color": "#f4f4f2",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
