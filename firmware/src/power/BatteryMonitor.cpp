@@ -12,8 +12,7 @@ void BatteryMonitor::begin() {
     analogReadResolution(12);
     analogSetPinAttenuation(pins::kBatteryAdc, ADC_11db);
     state_ = update(true);
-    Logger::info("battery", "adc=%umV battery=%umV pct=%u", state_.millivolts, state_.millivolts,
-                 state_.percent);
+    Logger::info("battery", "battery=%umV pct=%u", state_.millivolts, state_.percent);
 }
 
 uint16_t BatteryMonitor::readBatteryMillivolts() {

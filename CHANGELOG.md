@@ -17,7 +17,7 @@
 ### Verified
 
 - 29/29 native unit tests PASS (Docker, 2026-11-24).
-- ESP32-S3 firmware builds: flash 1 566 880 B (37.4 %), RAM 46 480 B (14.2 %).
+- ESP32-S3 firmware builds: flash 1 566 864 B (37.4 %), RAM 46 480 B (14.2 %).
 - LittleFS image builds with the SPA (6 MB partition).
 - Mock API endpoints (status/files/upload/delete) pass a curl smoke test.
 - clang-format passes on 46 C++ files.

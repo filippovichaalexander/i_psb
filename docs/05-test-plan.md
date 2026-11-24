@@ -111,7 +111,7 @@ docker compose run --rm native-tests
 | Дата | Версия | Уровень | Результат | Комментарий |
 |---|---|---|---|---|
 | 2026-11-24 | M0 | Unit (native) | **PASS 29/29** | 0.7 s, Docker |
-| 2026-11-24 | M0 | Build esp32s3 | **PASS** | flash 1 566 880 B (37.4 %), RAM 46 480 B (14.2 %) |
+| 2026-11-24 | M0 | Build esp32s3 | **PASS** | flash 1 566 864 B (37.4 %), RAM 46 480 B (14.2 %) |
 | 2026-11-24 | M0 | LittleFS | **PASS** | `make fs`, образ 6 291 456 B |
 | 2026-11-24 | M0 | Web syntax | **PASS** | `node --check`, manifest JSON |
 | 2026-11-24 | M0 | Web mock API | **PASS** | status, files, upload, delete (curl) |

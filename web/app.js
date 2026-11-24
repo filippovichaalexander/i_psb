@@ -2,9 +2,25 @@
 (() => {
   "use strict";
 
+  function readToken() {
+    try {
+      return localStorage.getItem("ipsb-token") || "dev-token";
+    } catch {
+      return "dev-token";
+    }
+  }
+
+  function writeToken(token) {
+    try {
+      localStorage.setItem("ipsb-token", token);
+    } catch {
+      /* private mode or blocked storage: keep the in-memory token */
+    }
+  }
+
   const state = {
     path: "/Music",
-    token: localStorage.getItem("ipsb-token") || "dev-token",
+    token: readToken(),
     status: null,
     online: false,
   };
@@ -354,7 +370,7 @@
     $("token").value = state.token;
     $("save-token").addEventListener("click", () => {
       state.token = $("token").value.trim() || "dev-token";
-      localStorage.setItem("ipsb-token", state.token);
+      writeToken(state.token);
       toast("Token saved");
       refreshStatus();
       loadFiles();

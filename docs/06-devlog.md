@@ -44,7 +44,7 @@ E-Ink Hi-Fi плеер. Задача: проанализировать, созд
 | Native unit | `docker compose run --rm native-tests` | **29/29 PASS**, 0.7 s |
 | ESP32 build | `docker compose run --rm firmware pio run` | **SUCCESS**, 45 s first / 7 s incremental |
 | RAM | size report | 46 480 B / 327 680 B (**14.2 %**) |
-| Flash | size report | 1 566 880 B / 4 194 304 B (**37.4 %**) |
+| Flash | size report | 1 566 864 B / 4 194 304 B (**37.4 %**) |
 | LittleFS | `make fs` | SUCCESS, образ 6 291 456 B (раздел 6 МБ) |
 | Web JS | `node --check web/app.js` | PASS |
 | Mock API | status/files/upload/delete | PASS (curl) |
