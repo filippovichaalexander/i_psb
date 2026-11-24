@@ -1,0 +1,59 @@
+# PlatformIO
+.pio/
+.pio-core/
+*.bin
+*.elf
+*.map
+*.hex
+*.uf2
+firmware/data/www/
+build/
+!docs/**/*.bin
+
+# Node / web
+node_modules/
+web/dist/
+npm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+secrets.h
+*.pem
+*.key
+credentials.json
+wifi.json
+stations.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.swp
+*~
+.cache/
+
+# Logs / artifacts
+logs/
+*.log
+!docs/**/*.log
+coverage/
+test-results/
+cad/*.stl
+cad/*.3mf
+cad/*.gcode
