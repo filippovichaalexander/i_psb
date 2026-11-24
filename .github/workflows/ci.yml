@@ -39,6 +39,11 @@ jobs:
       - name: Size report
         run: docker compose run --rm firmware pio run -t size
 
+      # The container runs as root; actions/cache cannot tar root-owned files.
+      - name: Make cache readable
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" .pio-core firmware/.pio || true
+
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -72,6 +77,10 @@ jobs:
       - name: Run tests
         run: docker compose run --rm native-tests
 
+      - name: Make cache readable
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" .pio-core firmware/.pio || true
+
   format:
     name: clang-format
     runs-on: ubuntu-latest
@@ -100,6 +109,23 @@ jobs:
         run: python3 -m json.tool web/manifest.webmanifest > /dev/null
       - name: Compile mock server
         run: python3 -m py_compile tools/devserver.py
+
+      - name: Smoke-test mock API
+        run: |
+          python3 tools/devserver.py --host 127.0.0.1 --port 8099 &
+          server=$!
+          trap 'kill $server' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8099/api/status > /dev/null; then break; fi
+            sleep 0.2
+          done
+          curl -fsS http://127.0.0.1:8099/api/status > /dev/null
+          curl -fsS -H 'X-IPSB-Token: dev-token' \
+            'http://127.0.0.1:8099/api/files?path=/Music' > /dev/null
+          curl -fsS -X POST -H 'X-IPSB-Token: dev-token' --data-binary 'test' \
+            'http://127.0.0.1:8099/api/upload?path=/Music&name=ci.bin' > /dev/null
+          curl -fsS -X DELETE -H 'X-IPSB-Token: dev-token' \
+            'http://127.0.0.1:8099/api/file?path=/Music/ci.bin' > /dev/null
 
   cad:
     name: cad render (best effort)

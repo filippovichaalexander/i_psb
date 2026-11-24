@@ -36,6 +36,8 @@ E-Ink Hi-Fi плеер. Задача: проанализировать, созд
 | 9 | `Network.h` / `FS.h` not found | `lib_ldf_mode = deep+` ломает резолв встроенных библиотек ядра | Убран deep+, default LDF |
 | 10 | Лишняя зависимость U8g2 | FAF сам содержит `u8g2_fonts.c` (1689 шрифтов) | U8g2 удалён из `lib_deps` |
 | 11 | Риск голодания I2S | audioI2S создаёт свою DMA-задачу priority 2 | feeder priority 1, не выше DMA |
+| 12 | CI: `Failed to save cache: tar exit 2` | контейнер пишет `.pio-core`/`.pio` от root, `actions/cache` не может прочитать | `sudo chown -R $(id -u):$(id -g)` перед cache post-step |
+| 13 | CI: Node.js 20 deprecation warnings | `actions/*@v4` ещё на Node 20 | не блокирует; обновить actions отдельным PR |
 
 ### Верификация M0 (2026-11-24)
 
@@ -49,6 +51,8 @@ E-Ink Hi-Fi плеер. Задача: проанализировать, созд
 | Web JS | `node --check web/app.js` | PASS |
 | Mock API | status/files/upload/delete | PASS (curl) |
 | Format | `./tools/lint.sh` | PASS |
+| CI (push) | GitHub Actions run 45449902939 | **PASS** (firmware, native, format, web, CAD) |
+| CI (PR) | GitHub Actions run 45450030167 | **PASS** |
 | HIL | — | **BLOCKED**: нет подтверждённой платы/железа |
 
 ### Решения

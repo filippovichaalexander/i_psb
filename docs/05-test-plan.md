@@ -117,6 +117,6 @@ docker compose run --rm native-tests
 | 2026-11-24 | M0 | Web mock API | **PASS** | status, files, upload, delete (curl) |
 | 2026-11-24 | M0 | clang-format | **PASS** | 46 files |
 | 2026-11-24 | M0 | HIL | **BLOCKED** | нет подтверждённой платы; см. 07-bringup |
-| — | M0 | CI (GitHub Actions) | ожидает push | см. Actions после develop |
+| 2026-11-24 | M0 | CI (GitHub Actions) | **PASS** | push/PR: firmware, native, format, web, CAD |
 
 > Обновляйте таблицу после каждого прогона. FAIL без причины — не результат.
