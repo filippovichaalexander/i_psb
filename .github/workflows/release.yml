@@ -1,0 +1,68 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pio-core
+            firmware/.pio
+          key: pio-release-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+          restore-keys: |
+            pio-release-${{ runner.os }}-
+
+      - name: Build image
+        run: docker compose build firmware
+
+      - name: Build firmware
+        run: docker compose run --rm firmware pio run
+
+      - name: Package web and build LittleFS
+        run: |
+          ./tools/package_web.sh
+          docker compose run --rm firmware pio run -t buildfs
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p build
+          cp firmware/.pio/build/esp32s3/firmware.bin build/
+          cp firmware/.pio/build/esp32s3/bootloader.bin build/
+          cp firmware/.pio/build/esp32s3/partitions.bin build/
+          if [ -f firmware/.pio/build/esp32s3/littlefs.bin ]; then
+            cp firmware/.pio/build/esp32s3/littlefs.bin build/
+          fi
+          (cd web && zip -qr ../build/web.zip .)
+          sha256sum build/* > build/SHA256SUMS.txt
+
+      - name: Render case (best effort)
+        continue-on-error: true
+        run: |
+          docker run --rm -v "$PWD":/workspace -w /workspace/cad \
+            openscad/openscad:latest openscad -o /workspace/build/case.stl case.scad
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            build/firmware.bin
+            build/bootloader.bin
+            build/partitions.bin
+            build/SHA256SUMS.txt
+            build/web.zip
+            build/littlefs.bin
+            build/case.stl
