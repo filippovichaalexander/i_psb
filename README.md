@@ -1,8 +1,14 @@
 # i_psb — ultra-compact retro Hi-Fi player on ESP32-S3
 
-**Status: M0 — blueprint + buildable skeleton.** The firmware boots, drives the E-Paper display,
-reads the wheel/buttons, monitors the battery and mounts the SD card. Audio playback uses
-`ESP32-audioI2S` (16–48 kHz); the hi-res FLAC path is an open design decision (see the audit).
+[![ci](https://github.com/filippovichaalexander/i_psb/actions/workflows/ci.yml/badge.svg)](https://github.com/filippovichaalexander/i_psb/actions/workflows/ci.yml)
+
+**Status: M0 — blueprint + buildable skeleton.** Verified on 2026-11-24:
+firmware builds (flash 37.4 %, RAM 14.2 %), **29/29 native tests pass**, the web SPA
+talks to the mock API, and the LittleFS image builds. It boots, drives the E-Paper
+display, reads the wheel/buttons, monitors the battery and mounts the SD card.
+Audio playback uses `ESP32-audioI2S` (16–48 kHz); the hi-res FLAC path is an open
+design decision (see the audit). Hardware-in-the-loop is **blocked** until the exact
+ESP32 board is confirmed (see [B2/B11](docs/03-critique.md)).
 
 [English abstract](#english) · [Документация](#документация) · [Быстрый старт](#быстрый-старт-docker)
 
@@ -30,10 +36,26 @@ reads the wheel/buttons, monitors the battery and mounts the SD card. Audio play
 |---|---|---|
 | `BAT_ADC = GPIO42` | `BAT_ADC = GPIO10` | На ESP32-S3 ADC есть только на GPIO1–20; GPIO42 — обычный GPIO. |
 | `EPD_CS = GPIO10` | `EPD_CS = GPIO21` | Освободили ADC1_CH9 (GPIO10) под делитель батареи. |
-| `u8g2_font_helvB*_t_cyrillic` | `u8g2_font_unifont_t_cyrillic` / `cu12_t_cyrillic` | Helvetica-шрифтов с кириллицей в U8g2 нет — код бы не собрался. |
+| `u8g2_font_helvB*_t_cyrillic` | `u8g2_font_unifont_t_cyrillic` / `10x20_t_cyrillic` | Helvetica-шрифтов с кириллицей в U8g2 нет — код бы не собрался. |
 
 Ещё два пункта требуют решения до закупки/пайки: **USB data path** (TP4056 Type-C — только зарядка)
 и **24/96 FLAC** (ESP32-audioI2S официально ограничен 16–48 кГц). Подробности — в аудите.
+
+## Что нужно от владельца (до закупки и пайки)
+
+1. **Точная плата ESP32-S3**: ссылка на товар + фото шелкографии с двух сторон.
+   Нужно подтвердить, что выведены `GPIO38–42`, `GPIO47–48` и USB `D+/D−`.
+   Если это SuperMini с 12–14 GPIO, текущая распиновка нереализуема.
+2. **Как прошивать**: второй USB-C (данные), pogo-pad или один Type-C с `D+/D−`.
+   TP4056 Type-C — только зарядка; без data path нет логов и recovery.
+3. **Экран**: оставляем E-Ink 2.13" (страничный UI) или переходим на IPS 2.0"
+   240×320 (портретный iPod-вид, но подсветка и расход).
+4. **24/96 FLAC**: согласны ограничиться 16/44.1–48 кГц в v0 или нужен отдельный
+   hi-res тракт (больше работы и риска underrun).
+5. **Инструменты**: что уже есть из списка в [docs/07](docs/07-hardware-bringup.md#2-инструменты-минимум--комфорт)
+   (паяльная станция, БП с ограничением тока, мультиметр, осциллограф).
+
+Ответы на эти пункты разблокируют M1 (bring-up) и финальную распиновку.
 
 ## Архитектура (кратко)
 

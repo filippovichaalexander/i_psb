@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f4f4f2" />
+    <title>i_psb — sync</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">i_psb</span>
+        <span class="tag">sync</span>
+      </div>
+      <div class="status" id="status" aria-live="polite">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">connecting…</span>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab active" role="tab" data-tab="files" aria-selected="true">Files</button>
+      <button class="tab" role="tab" data-tab="upload" aria-selected="false">Upload</button>
+      <button class="tab" role="tab" data-tab="wifi" aria-selected="false">Wi-Fi</button>
+      <button class="tab" role="tab" data-tab="logs" aria-selected="false">Logs</button>
+    </nav>
+
+    <main>
+      <section class="panel active" id="tab-files" role="tabpanel">
+        <div class="toolbar">
+          <button class="btn" id="refresh-files" type="button">Refresh</button>
+          <button class="btn" id="mkdir" type="button">New folder</button>
+          <span class="path" id="current-path">/Music</span>
+        </div>
+        <ul class="file-list" id="file-list" aria-label="Files"></ul>
+        <p class="hint" id="files-hint"></p>
+      </section>
+
+      <section class="panel" id="tab-upload" role="tabpanel">
+        <div class="dropzone" id="dropzone" tabindex="0" role="button"
+             aria-label="Drop audio files here or press Enter to choose files">
+          <strong>Drop audio files here</strong>
+          <span>or click to choose. Uploads stream to the SD card.</span>
+          <input id="file-input" type="file" multiple accept="audio/*,.flac,.mp3,.wav,.aac,.m4a,.ogg,.opus" hidden />
+        </div>
+        <ul class="upload-list" id="upload-list"></ul>
+        <p class="hint">Destination: <span id="upload-path">/Music</span></p>
+      </section>
+
+      <section class="panel" id="tab-wifi" role="tabpanel">
+        <form class="form" id="wifi-form">
+          <label>
+            <span>Network name (SSID)</span>
+            <input id="wifi-ssid" name="ssid" autocomplete="off" maxlength="32" />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="wifi-password" name="password" type="password" autocomplete="new-password" maxlength="64" />
+          </label>
+          <label>
+            <span>Mode</span>
+            <select id="wifi-mode" name="mode">
+              <option value="sta">Home network (STA)</option>
+              <option value="ap">Device access point</option>
+            </select>
+          </label>
+          <button class="btn primary" type="submit">Save</button>
+          <p class="hint" id="wifi-hint">The password is never returned by the device.</p>
+        </form>
+      </section>
+
+      <section class="panel" id="tab-logs" role="tabpanel">
+        <div class="toolbar">
+          <button class="btn" id="refresh-logs" type="button">Refresh</button>
+          <span class="hint">Last 200 lines from the device ring buffer.</span>
+        </div>
+        <pre class="logs" id="logs">—</pre>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <label class="token">
+        <span>API token</span>
+        <input id="token" type="password" autocomplete="off" placeholder="from the device screen" />
+      </label>
+      <button class="btn" id="save-token" type="button">Save token</button>
+      <span class="hint" id="token-hint">Stored only in this browser.</span>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

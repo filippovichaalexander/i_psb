@@ -1,0 +1,12 @@
+{
+  "name": "ipsb_core",
+  "version": "0.1.0",
+  "description": "Pure C++ core logic for i_psb: battery, playlist, wheel, UTF-8, ID3, formatting. No Arduino dependencies.",
+  "keywords": ["ipsb", "audio", "battery", "utf8", "id3"],
+  "frameworks": "*",
+  "platforms": "*",
+  "build": {
+    "srcDir": "src",
+    "includeDir": "include"
+  }
+}

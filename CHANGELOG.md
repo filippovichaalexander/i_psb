@@ -14,11 +14,19 @@
 - CI: firmware build, native tests, size report, release workflow, clang-format.
 - Параметрический каркас корпуса `cad/case.scad`.
 
+### Verified
+
+- 29/29 native unit tests PASS (Docker, 2026-11-24).
+- ESP32-S3 firmware builds: flash 1 566 864 B (37.4 %), RAM 46 480 B (14.2 %).
+- LittleFS image builds with the SPA (6 MB partition).
+- Mock API endpoints (status/files/upload/delete) pass a curl smoke test.
+- clang-format passes on 46 C++ files.
+
 ### Changed
 
 - `BAT_ADC`: GPIO42 → GPIO10 (на ESP32-S3 GPIO42 не имеет ADC).
 - `EPD_CS`: GPIO10 → GPIO21 (освобождение ADC1_CH9).
-- Шрифты: Helvetica Cyrillic (не существует в U8g2) → Unifont/Courier Cyrillic.
+- Шрифты: Helvetica Cyrillic (не существует в U8g2) → Unifont/10x20 Cyrillic.
 
 ### Security
 

@@ -1,0 +1,29 @@
+name: Hardware finding
+description: Measurement, bring-up result, or a component that does not behave as expected
+labels: ["hardware"]
+body:
+  - type: input
+    id: board
+    attributes:
+      label: Board / module
+      placeholder: "ESP32-S3-N16R8 MINI (link), WeAct 2.13, PCM5102A..."
+    validations:
+      required: true
+  - type: textarea
+    id: measurement
+    attributes:
+      label: What was measured
+      description: Voltages, current, temperature, RSSI, scope captures. Include instrument and conditions.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+  - type: textarea
+    id: conclusion
+    attributes:
+      label: Conclusion / next step
+      description: What should change in the pinout, BOM, risk register or firmware?

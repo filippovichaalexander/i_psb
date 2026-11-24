@@ -1,0 +1,145 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  firmware:
+    name: firmware (esp32s3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pio-core
+            firmware/.pio
+          key: pio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini', 'firmware/partitions_16MB.csv') }}
+          restore-keys: |
+            pio-${{ runner.os }}-
+
+      - name: Build image
+        run: docker compose build firmware
+
+      - name: Build firmware
+        run: docker compose run --rm firmware pio run
+
+      - name: Size report
+        run: docker compose run --rm firmware pio run -t size
+
+      # The container runs as root; actions/cache cannot tar root-owned files.
+      - name: Make cache readable
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" .pio-core firmware/.pio || true
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp32s3
+          if-no-files-found: error
+          path: |
+            firmware/.pio/build/esp32s3/firmware.bin
+            firmware/.pio/build/esp32s3/firmware.elf
+            firmware/.pio/build/esp32s3/bootloader.bin
+            firmware/.pio/build/esp32s3/partitions.bin
+
+  native:
+    name: native unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pio-core
+            firmware/.pio
+          key: pio-native-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini', 'firmware/lib/**') }}
+          restore-keys: |
+            pio-native-${{ runner.os }}-
+
+      - name: Build image
+        run: docker compose build native-tests
+
+      - name: Run tests
+        run: docker compose run --rm native-tests
+
+      - name: Make cache readable
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" .pio-core firmware/.pio || true
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+      - name: Check formatting
+        run: |
+          files=$(find firmware/src firmware/include firmware/lib firmware/test -type f \( -name '*.cpp' -o -name '*.h' \))
+          if [ -n "$files" ]; then
+            clang-format --dry-run --Werror $files
+          fi
+
+  web:
+    name: web (syntax)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript
+        run: node --check web/app.js
+      - name: Validate manifest
+        run: python3 -m json.tool web/manifest.webmanifest > /dev/null
+      - name: Compile mock server
+        run: python3 -m py_compile tools/devserver.py
+
+      - name: Smoke-test mock API
+        run: |
+          python3 tools/devserver.py --host 127.0.0.1 --port 8099 &
+          server=$!
+          trap 'kill $server' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8099/api/status > /dev/null; then break; fi
+            sleep 0.2
+          done
+          curl -fsS http://127.0.0.1:8099/api/status > /dev/null
+          curl -fsS -H 'X-IPSB-Token: dev-token' \
+            'http://127.0.0.1:8099/api/files?path=/Music' > /dev/null
+          curl -fsS -X POST -H 'X-IPSB-Token: dev-token' --data-binary 'test' \
+            'http://127.0.0.1:8099/api/upload?path=/Music&name=ci.bin' > /dev/null
+          curl -fsS -X DELETE -H 'X-IPSB-Token: dev-token' \
+            'http://127.0.0.1:8099/api/file?path=/Music/ci.bin' > /dev/null
+
+  cad:
+    name: cad render (best effort)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render case
+        run: |
+          mkdir -p build
+          docker run --rm -v "$PWD":/workspace -w /workspace/cad \
+            openscad/openscad:latest openscad -o /workspace/build/case.stl case.scad
+      - uses: actions/upload-artifact@v4
+        with:
+          name: case-stl
+          if-no-files-found: warn
+          path: build/case.stl

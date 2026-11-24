@@ -1,0 +1,48 @@
+services:
+  firmware:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pio
+    image: ipsb-pio:local
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/firmware
+    environment:
+      PLATFORMIO_CORE_DIR: /workspace/.pio-core
+    command: pio run
+
+  native-tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pio
+    image: ipsb-pio:local
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/firmware
+    environment:
+      PLATFORMIO_CORE_DIR: /workspace/.pio-core
+    command: pio test -e native
+
+  firmware-shell:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pio
+    image: ipsb-pio:local
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/firmware
+    environment:
+      PLATFORMIO_CORE_DIR: /workspace/.pio-core
+    command: bash
+    stdin_open: true
+    tty: true
+    profiles: ["tools"]
+
+  web-dev:
+    image: python:3.12-alpine
+    volumes:
+      - .:/workspace:ro
+    working_dir: /workspace
+    command: python -I tools/devserver.py --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
