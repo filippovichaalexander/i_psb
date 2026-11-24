@@ -1,13 +1,14 @@
 COMPOSE ?= docker compose
 PORT ?= /dev/ttyACM0
 
-.PHONY: help build test fs web-dev flash monitor shell lint clean cad size
+.PHONY: help build test fs fs-flash web-dev flash monitor shell lint clean cad size
 
 help:
 	@echo "i_psb targets:"
 	@echo "  make build    - compile ESP32-S3 firmware (Docker/PlatformIO)"
 	@echo "  make test     - run native unit tests"
 	@echo "  make fs       - copy web/ to firmware/data/www and build LittleFS image"
+	@echo "  make fs-flash - upload the LittleFS image over USB"
 	@echo "  make web-dev  - serve the SPA with mock API on http://localhost:8080"
 	@echo "  make flash    - flash over USB (PORT=/dev/ttyACM0 by default)"
 	@echo "  make monitor  - serial monitor"
@@ -26,6 +27,9 @@ test:
 fs:
 	./tools/package_web.sh
 	$(COMPOSE) run --rm firmware pio run -t buildfs
+
+fs-flash:
+	./tools/uploadfs.sh $(PORT)
 
 web-dev:
 	$(COMPOSE) up web-dev
