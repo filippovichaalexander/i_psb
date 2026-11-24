@@ -34,8 +34,7 @@ flash:
 	./tools/flash.sh $(PORT)
 
 monitor:
-	$(COMPOSE) run --rm --device=$(PORT) --group-add dialout firmware \
-		pio device monitor -b 115200 --port $(PORT)
+	./tools/monitor.sh $(PORT)
 
 shell:
 	$(COMPOSE) run --rm firmware-shell
