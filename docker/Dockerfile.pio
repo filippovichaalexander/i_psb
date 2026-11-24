@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    ca-certificates \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# PlatformIO's official Docker image is not reliably available on Docker Hub,
+# so the toolchain is installed from PyPI with a pinned version.
+RUN pip install --no-cache-dir platformio==6.2.0
+
+ENV PLATFORMIO_CORE_DIR=/workspace/.pio-core
+
+WORKDIR /workspace
